@@ -5,6 +5,7 @@ import { UserWarning } from './UserWarning';
 import {
   addNewTodo,
   changeTodoStatus,
+  changeTodoTitle,
   deleteTodo,
   getTodos,
   USER_ID,
@@ -133,6 +134,72 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleToggleAll = async () => {
+    const areAllCompleted =
+      todos.length > 0 && todos.every(todo => todo.completed);
+    const newStatus = !areAllCompleted;
+
+    const todosToUpdate = todos.filter(todo => todo.completed !== newStatus);
+
+    if (todosToUpdate.length === 0) {
+      return;
+    }
+
+    setTodos(prev =>
+      prev.map(todo =>
+        todosToUpdate.some(t => t.id === todo.id)
+          ? { ...todo, completed: newStatus }
+          : todo,
+      ),
+    );
+
+    try {
+      await Promise.all(
+        todosToUpdate.map(todo => changeTodoStatus(todo.id, newStatus)),
+      );
+    } catch {
+      setTodos(prev =>
+        prev.map(todo =>
+          todosToUpdate.some(t => t.id === todo.id)
+            ? { ...todo, completed: !newStatus }
+            : todo,
+        ),
+      );
+      setErrorMessage('Unable to update some todos');
+    }
+  };
+
+  const handleChangeTodoTitle = async (id: number, newTitle: string) => {
+    const oldTodo = todos.find(todo => todo.id === id);
+
+    if (!oldTodo) {
+      return;
+    }
+
+    const oldTitle = oldTodo.title;
+
+    setLoadingTodoId(id);
+    setTodos(prevTodos =>
+      prevTodos.map(todo =>
+        todo.id === id ? { ...todo, title: newTitle } : todo,
+      ),
+    );
+
+    try {
+      await changeTodoTitle(id, newTitle);
+    } catch (err) {
+      setErrorMessage('Unable to update a todo');
+
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todo.id === id ? { ...todo, title: oldTitle } : todo,
+        ),
+      );
+    } finally {
+      setLoadingTodoId(null);
+    }
+  };
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
@@ -145,7 +212,10 @@ export const App: React.FC = () => {
           isDisabled={isAdding}
           inputRef={inputRef}
           setErrorMessage={setErrorMessage}
-          
+          areAllCompleted={
+            todos.length > 0 && todos.every(todo => todo.completed)
+          }
+          onToggleAll={handleToggleAll}
         />
 
         <TodoList
@@ -153,6 +223,7 @@ export const App: React.FC = () => {
           onDelete={handleDeleteTodo}
           onStatusUpdate={handleStatusTodo}
           loadingTodoId={loadingTodoId}
+          onTitleUpdate={handleChangeTodoTitle}
         />
 
         {tempTodo && (
@@ -161,6 +232,7 @@ export const App: React.FC = () => {
             todo={tempTodo}
             isLoading
             onStatusUpdate={handleStatusTodo}
+            onTitleUpdate={handleChangeTodoTitle}
           />
         )}
 

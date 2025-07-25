@@ -7,6 +7,8 @@ type Props = {
   isDisabled: boolean;
   inputRef: React.RefObject<HTMLInputElement>;
   setErrorMessage: (msg: string) => void;
+  areAllCompleted: boolean;
+  onToggleAll: () => void;
 };
 
 export const TodoHeader: React.FC<Props> = ({
@@ -16,14 +18,17 @@ export const TodoHeader: React.FC<Props> = ({
   isDisabled,
   inputRef,
   setErrorMessage,
+  areAllCompleted,
+  onToggleAll,
 }) => {
   return (
     <header className="todoapp__header">
       {/* this button should have `active` class only if all todos are completed */}
       <button
         type="button"
-        className="todoapp__toggle-all active"
+        className={`todoapp__toggle-all ${areAllCompleted ? 'active' : ''}`}
         data-cy="ToggleAllButton"
+        onClick={onToggleAll}
       />
 
       {/* Add a todo on form submit */}
