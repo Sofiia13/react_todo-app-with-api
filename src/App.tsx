@@ -41,6 +41,18 @@ export const App: React.FC = () => {
     inputRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setErrorMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
+
   if (!USER_ID) {
     return <UserWarning />;
   }
@@ -200,6 +212,19 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleClearCompleted = async () => {
+    const completedTodos = todos.filter(todo => todo.completed);
+
+    try {
+      await Promise.all(completedTodos.map(todo => deleteTodo(todo.id)));
+      const updatedTodos = await getTodos();
+
+      setTodos(updatedTodos);
+    } catch {
+      setErrorMessage('Unable to clear completed todos');
+    }
+  };
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
@@ -237,7 +262,14 @@ export const App: React.FC = () => {
         )}
 
         {/* Hide the footer if there are no todos */}
-        <TodoFooter todos={todos} filter={filter} setFilter={setFilter} />
+        {todos && todos.length > 0 && (
+          <TodoFooter
+            todos={todos}
+            filter={filter}
+            setFilter={setFilter}
+            handleClearCompleted={handleClearCompleted}
+          />
+        )}
       </div>
 
       {/* DON'T use conditional rendering to hide the notification */}
