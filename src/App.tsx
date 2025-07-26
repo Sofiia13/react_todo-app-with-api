@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React, { useEffect, useRef, useState } from 'react';
-import { UserWarning } from './UserWarning';
 import {
   addNewTodo,
   changeTodoStatus,
@@ -15,6 +14,7 @@ import { TodoList } from './components/TodoList';
 import { TodoFooter } from './components/TodoFooter';
 import { Todo } from './types/Todo';
 import { TodoItem } from './components/TodoItem';
+import { ErrorMessage } from './components/ErrorMessage';
 
 export const App: React.FC = () => {
   const [newTodo, setNewTodo] = useState('');
@@ -53,9 +53,11 @@ export const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [errorMessage]);
 
-  if (!USER_ID) {
-    return <UserWarning />;
-  }
+  useEffect(() => {
+    if (errorMessage) {
+      inputRef.current?.focus();
+    }
+  }, [errorMessage]);
 
   const filteredTodos = todos?.filter(todo => {
     if (filter === 'active') {
@@ -112,13 +114,16 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteTodo = async (id: number) => {
+    setLoadingTodoId(id);
+
     try {
       await deleteTodo(id);
-      const updatedTodos = await getTodos();
-
-      setTodos(updatedTodos);
+      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+      inputRef.current?.focus();
     } catch (err) {
       setErrorMessage('Unable to delete a todo');
+    } finally {
+      setLoadingTodoId(null);
     }
   };
 
@@ -215,13 +220,23 @@ export const App: React.FC = () => {
   const handleClearCompleted = async () => {
     const completedTodos = todos.filter(todo => todo.completed);
 
-    try {
-      await Promise.all(completedTodos.map(todo => deleteTodo(todo.id)));
-      const updatedTodos = await getTodos();
+    const results = await Promise.allSettled(
+      completedTodos.map(todo => deleteTodo(todo.id).then(() => todo.id)),
+    );
 
-      setTodos(updatedTodos);
-    } catch {
-      setErrorMessage('Unable to clear completed todos');
+    const successfullyDeletedIds = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => (r as PromiseFulfilledResult<number>).value);
+
+    const failedDeletions = results.some(r => r.status === 'rejected');
+
+    setTodos(prev =>
+      prev.filter(todo => !successfullyDeletedIds.includes(todo.id)),
+    );
+    inputRef.current?.focus();
+
+    if (failedDeletions) {
+      setErrorMessage('Unable to delete a todo');
     }
   };
 
@@ -274,21 +289,10 @@ export const App: React.FC = () => {
 
       {/* DON'T use conditional rendering to hide the notification */}
       {/* Add the 'hidden' class to hide the message smoothly */}
-      <div
-        data-cy="ErrorNotification"
-        className={`
-    notification is-danger is-light has-text-weight-normal
-    ${!errorMessage ? 'hidden' : ''}
-  `}
-      >
-        <button
-          data-cy="HideErrorButton"
-          type="button"
-          className="delete"
-          onClick={() => setErrorMessage('')}
-        />
-        {errorMessage}
-      </div>
+      <ErrorMessage
+        errorMessage={errorMessage}
+        setErrorMessage={setErrorMessage}
+      />
     </div>
   );
 };

@@ -19,11 +19,11 @@ export const TodoItem: React.FC<Props> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(todo.title);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputEditRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isEditing) {
-      inputRef.current?.focus();
+      inputEditRef.current?.focus();
     }
   }, [isEditing]);
 
@@ -58,6 +58,7 @@ export const TodoItem: React.FC<Props> = ({
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label className="todo__status-label">
         <input
+          ref={inputEditRef}
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
@@ -74,7 +75,7 @@ export const TodoItem: React.FC<Props> = ({
         >
           <input
             data-cy="TodoTitleField"
-            ref={inputRef}
+            ref={inputEditRef}
             type="text"
             className="todo__title-field"
             value={editedTitle}
