@@ -15,11 +15,12 @@ import { TodoFooter } from './components/TodoFooter';
 import { Todo } from './types/Todo';
 import { TodoItem } from './components/TodoItem';
 import { ErrorMessage } from './components/ErrorMessage';
+import { Filter } from './utils/filter';
 
 export const App: React.FC = () => {
   const [newTodo, setNewTodo] = useState('');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [filter, setFilter] = useState<Filter>(Filter.All);
   const [errorMessage, setErrorMessage] = useState('');
 
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
@@ -59,12 +60,12 @@ export const App: React.FC = () => {
     }
   }, [errorMessage]);
 
-  const filteredTodos = todos?.filter(todo => {
-    if (filter === 'active') {
+  const filteredTodos = todos.filter(todo => {
+    if (filter === Filter.Active) {
       return !todo.completed;
     }
 
-    if (filter === 'completed') {
+    if (filter === Filter.Completed) {
       return todo.completed;
     }
 

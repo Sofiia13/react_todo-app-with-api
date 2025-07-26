@@ -1,13 +1,12 @@
 import React from 'react';
 import { Todo } from '../types/Todo';
+import { Filter } from '../utils/filter';
 
 /* eslint-disable @typescript-eslint/indent */
 type Props = {
   todos: Todo[];
-  filter: 'all' | 'active' | 'completed';
-  setFilter: React.Dispatch<
-    React.SetStateAction<'all' | 'active' | 'completed'>
-  >;
+  filter: Filter;
+  setFilter: React.Dispatch<React.SetStateAction<Filter>>;
   handleClearCompleted: () => void;
 };
 /* eslint-enable @typescript-eslint/indent */
@@ -35,7 +34,7 @@ export const TodoFooter: React.FC<Props> = ({
           data-cy="FilterLinkAll"
           onClick={e => {
             e.preventDefault();
-            setFilter('all');
+            setFilter(Filter.All);
           }}
         >
           All
@@ -47,7 +46,7 @@ export const TodoFooter: React.FC<Props> = ({
           data-cy="FilterLinkActive"
           onClick={e => {
             e.preventDefault();
-            setFilter('active');
+            setFilter(Filter.Active);
           }}
         >
           Active
@@ -59,7 +58,7 @@ export const TodoFooter: React.FC<Props> = ({
           data-cy="FilterLinkCompleted"
           onClick={e => {
             e.preventDefault();
-            setFilter('completed');
+            setFilter(Filter.Completed);
           }}
         >
           Completed
