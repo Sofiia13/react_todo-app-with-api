@@ -190,7 +190,9 @@ export const App: React.FC = () => {
   const handleChangeTodoTitle = async (id: number, newTitle: string) => {
     const oldTodo = todos.find(todo => todo.id === id);
 
-    if (!oldTodo) return;
+    if (!oldTodo) {
+      return;
+    }
 
     const oldTitle = oldTodo.title;
 
