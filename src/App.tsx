@@ -131,14 +131,14 @@ export const App: React.FC = () => {
   const handleStatusTodo = async (id: number, status: boolean) => {
     setLoadingTodoId(id);
 
-    setTodos(prevTodos =>
-      prevTodos.map(todo =>
-        todo.id === id ? { ...todo, completed: status } : todo,
-      ),
-    );
-
     try {
       await changeTodoStatus(id, status);
+
+      setTodos(prevTodos =>
+        prevTodos.map(todo =>
+          todo.id === id ? { ...todo, completed: status } : todo,
+        ),
+      );
     } catch (err) {
       setErrorMessage('Unable to update a todo');
 
@@ -190,9 +190,7 @@ export const App: React.FC = () => {
   const handleChangeTodoTitle = async (id: number, newTitle: string) => {
     const oldTodo = todos.find(todo => todo.id === id);
 
-    if (!oldTodo) {
-      return;
-    }
+    if (!oldTodo) return;
 
     const oldTitle = oldTodo.title;
 
@@ -206,13 +204,13 @@ export const App: React.FC = () => {
     try {
       await changeTodoTitle(id, newTitle);
     } catch (err) {
-      setErrorMessage('Unable to update a todo');
-
       setTodos(prevTodos =>
         prevTodos.map(todo =>
           todo.id === id ? { ...todo, title: oldTitle } : todo,
         ),
       );
+      setErrorMessage('Unable to update a todo');
+      throw err;
     } finally {
       setLoadingTodoId(null);
     }
@@ -257,6 +255,7 @@ export const App: React.FC = () => {
             todos.length > 0 && todos.every(todo => todo.completed)
           }
           onToggleAll={handleToggleAll}
+          hasTodos={todos.length > 0}
         />
 
         <TodoList

@@ -27,16 +27,23 @@ export const TodoItem: React.FC<Props> = ({
     }
   }, [isEditing]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmedTitle = editedTitle.trim();
 
     if (trimmedTitle === '') {
-      onDelete(todo.id); // delete if empty
-    } else if (trimmedTitle !== todo.title) {
-      onTitleUpdate(todo.id, trimmedTitle);
+      onDelete(todo.id);
+      return;
     }
 
-    setIsEditing(false);
+    if (trimmedTitle !== todo.title) {
+      try {
+        await onTitleUpdate(todo.id, trimmedTitle);
+        setIsEditing(false); 
+      } catch {
+      }
+    } else {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

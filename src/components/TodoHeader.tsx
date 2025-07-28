@@ -9,6 +9,7 @@ type Props = {
   setErrorMessage: (msg: string) => void;
   areAllCompleted: boolean;
   onToggleAll: () => void;
+  hasTodos: boolean;
 };
 
 export const TodoHeader: React.FC<Props> = ({
@@ -20,16 +21,19 @@ export const TodoHeader: React.FC<Props> = ({
   setErrorMessage,
   areAllCompleted,
   onToggleAll,
+  hasTodos,
 }) => {
   return (
     <header className="todoapp__header">
       {/* this button should have `active` class only if all todos are completed */}
-      <button
-        type="button"
-        className={`todoapp__toggle-all ${areAllCompleted ? 'active' : ''}`}
-        data-cy="ToggleAllButton"
-        onClick={onToggleAll}
-      />
+      {hasTodos && (
+        <button
+          type="button"
+          className={`todoapp__toggle-all ${areAllCompleted ? 'active' : ''}`}
+          data-cy="ToggleAllButton"
+          onClick={onToggleAll}
+        />
+      )}
 
       {/* Add a todo on form submit */}
       <form onSubmit={onSubmit}>
